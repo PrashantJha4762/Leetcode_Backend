@@ -13,6 +13,9 @@ export interface IProblemService{
     searchProblems(query:string):Promise<IProblem[]>;
 }
 export class ProblemService implements IProblemService{
+    static createProblem(body: any) {
+        throw new Error("Method not implemented.");
+    }
     private problemRepository:IProblemRepository;
 
     constructor(problemRepository:IProblemRepository){
