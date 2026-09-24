@@ -1,8 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
-import type { AnyZodObject } from "zod/v3";
 import { logger } from "../config/logger.config";
 
-export const validateRequestBody=(schema:AnyZodObject)=>{
+type RequestSchema = { parseAsync(data: unknown): Promise<unknown> };
+
+export const validateRequestBody=(schema:RequestSchema)=>{
     return async (req:Request,res:Response,next:NextFunction)=>{
         try{
             logger.info("Validating request body",);
@@ -20,7 +21,7 @@ export const validateRequestBody=(schema:AnyZodObject)=>{
     }
 }
 
-export const validateRequestQuery=(schema:AnyZodObject)=>{
+export const validateRequestQuery=(schema:RequestSchema)=>{
     return async (req:Request,res:Response,next:NextFunction)=>{
         try{
             logger.info("Validating request query");
@@ -34,6 +35,24 @@ export const validateRequestQuery=(schema:AnyZodObject)=>{
                 success:false,
                 error:err
             })
+        }
+    }
+}
+
+export const validateRequestParams=(schema:RequestSchema)=>{
+    return async (req:Request,res:Response,next:NextFunction)=>{
+        try{
+            logger.info("Validating request params");
+            await schema.parseAsync(req.params);
+            logger.info("Request params are valid");
+            next();
+        }
+        catch(err){
+            res.status(400).json({
+                message:"Invalid Request Params",
+                success:false,
+                error:err
+            });
         }
     }
 }
