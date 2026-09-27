@@ -1,21 +1,28 @@
 import { Queue } from "bullmq";
-import { createRedisConnection } from "../config/redis.config";
-import { logger } from "../config/logger.config";
+import { createNewRedisConnection } from "../config/redis.config";
+import logger from "../config/logger.config";
+import { SUBMISSION_QUEUE } from "../utils/constants";
 
-export const submissionqueue= new Queue("submission",{
-    connection:createRedisConnection(),
-    defaultJobOptions:{
-        attempts:3,
-        backoff:{
-            type:"exponential",
-            delay:2000
+export const submissionQueue = new Queue(SUBMISSION_QUEUE, {
+    connection: createNewRedisConnection(),
+    defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+            type: "exponential",
+            delay: 2000
         }
     }
-})
-submissionqueue.on("error", (error) => {
+});
+
+// Alias for backwards compatibility
+export const submissionqueue = submissionQueue;
+
+submissionQueue.on("error", (error) => {
     logger.error(`Submission queue error: ${error}`);
 });
 
-submissionqueue.on("waiting", (job) => {
-    logger.info(`Submission job waiting: ${job.id}`);
+submissionQueue.on("waiting", (job) => {
+    logger.info(`Submission job waiting in queue: ${job.id}`);
 });
+
+export default submissionQueue;
